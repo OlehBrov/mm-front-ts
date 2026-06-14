@@ -1,0 +1,68 @@
+.total-check-wrapper {
+  position: absolute;
+  background-color: #fff;
+  width: 800px;
+}
+.check-wrapper{
+  display: flex;
+}
+.check {
+  padding: 10px 50px;
+  border-radius: 10px;
+  width: 100%;
+  height: auto;
+  font-size: 14px;
+}
+
+.check-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.topComment {
+  text-align: center;
+}
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--text-color-main);
+  margin: 6px 0px;
+}
+
+.check-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.check-list-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-line,
+.check-tech-text-wrapper,
+.text-wrapper,
+.check-payment-text-wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.price-tax-wrap {
+  display: flex;
+  gap: 6px;
+}
+.check-qr-wrapper {
+  width: 100%;
+  height: 230px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.check-close-button{
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+}

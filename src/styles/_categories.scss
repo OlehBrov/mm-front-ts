@@ -1,0 +1,106 @@
+.sidebar {
+}
+.filter-item {
+  display: flex;
+  &:nth-child(2) {
+    margin-bottom: 110px;
+    & .filter-label {
+      padding: 30px 20px;
+    }
+  }
+}
+
+
+.filter-item.invisible{
+  height: 0;
+  overflow: hidden;
+}
+.filter-button-icon-wrapper {
+  width: 67px;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+}
+
+.devider {
+  display: block;
+  width: 1px;
+  height: 58px;
+  background-color: #dedede;
+}
+
+.filter-radio {
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+  display: none;
+}
+
+.filter-label {
+  width: 289px;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-style: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  color: var(--text-color-main);
+  text-align: start;
+  display: inline-flex;
+  fill: currentcolor;
+  font-family: "Fixel", sans-serif;
+
+  letter-spacing: 0.25px;
+  line-height: normal;
+  max-width: 100%;
+  overflow: visible;
+
+  position: relative;
+  transition: all 300ms linear;
+}
+
+.filter-label:active {
+  background-color: #4b4b5c7a;
+}
+
+.filter-item:first-child > .filter-label{
+border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.filter-item:nth-child(2) > .filter-label {
+border-top: none;
+border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
+}
+
+.filter-item:last-child > .filter-label {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
+}
+
+.filter-label-text {
+  position: relative;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+
+.filter-radio:checked + .filter-label .filter-label-text {
+  font-weight: 900;
+}
+.filter-radio:checked + .filter-label .filter-label-text::after {
+  opacity: 1;
+}
+
+.filter-label-text::after {
+  content: "";
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  width: 40px;
+  height: 8px;
+  background-color: var(--main-color-yellow);
+  opacity: 0;
+  transition: opacity 300ms;
+}

@@ -1,0 +1,248 @@
+.portal-overlay {
+  width: 1080px;
+  position: absolute;
+  inset: 0;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.screen-saver-logo {
+  font-size: 120px;
+  text-shadow: -2px 3px 5px rgba(0, 0, 0, 0.6);
+}
+.red-decor {
+  position: absolute;
+  width: 1500px;
+  height: 1376px;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  background: var(--main-color-yellow);
+  border-radius: 26% 26% 50% 50% / 0% 0% 20% 20%;
+  overflow: hidden;
+}
+
+.idle-circle {
+  position: absolute;
+  background-color: var(--main-color-yellow);
+  opacity: 0.4;
+}
+
+.idle-circle-1 {
+  top: 250px;
+  left: 250px;
+  width: 250px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -100%;
+    right: -100%;
+    width: 400px;
+    aspect-ratio: 1;
+    background: rgba(255, 216, 104, 0.6);
+    filter: blur(30px);
+    border-radius: 50%;
+  }
+}
+
+.idle-circle-2 {
+  top: 300px;
+  right: 100px;
+  width: 350px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0%;
+    right: 100%;
+    width: 300px;
+    aspect-ratio: 1;
+    background: rgba(255, 216, 104, 0.6);
+    filter: blur(30px);
+    border-radius: 50%;
+  }
+}
+.idle-circle-3 {
+  bottom: 200px;
+  right: 300px;
+  width: 550px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: #ff6a14;
+  border: 125px solid #ff8f0a;
+}
+
+.light-shadow {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  width: 1000px;
+  height: 350px;
+
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transform-origin: bottom;
+  background: rgba(255, 216, 104, 0.7);
+  filter: blur(90px);
+}
+.portal-content {
+  width: 760px;
+  position: relative;
+  top: 40%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 86px;
+
+  &.no-slider{
+    top: 50%;
+    gap: 294px;
+  }
+}
+.portal-idle-footer {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  width: -webkit-fill-available;
+  max-width: 100%;
+  border-radius: 5px;
+  margin: auto 30px 65px 30px;
+  box-shadow: 0px 2px 20px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: var(--main-color-yellow);
+}
+
+.qr-link-wrap {
+  width: 200px;
+  aspect-ratio: 1;
+  padding: 10px;
+  background: #fff;
+  overflow: hidden;
+
+  & p {
+    margin-top: 16px;
+  }
+}
+
+.portal-idle-footer-text-wrapper {
+  width: 502px;
+  padding: 30px 0 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.portal-idle-footer-heading {
+  color: #fff;
+
+  font-size: 45px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 120%;
+}
+
+.portal-idle-footer-text {
+  color: #fff;
+
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%;
+}
+
+.portal-idle-link-wrapper {
+  display: flex;
+  align-items: end;
+  background-color: #fff;
+  height: 100%;
+  border-top-left-radius: 250px;
+  width: 425px;
+  justify-content: space-around;
+  flex-shrink: 0;
+}
+.portal-idle-link-txt-wrapper {
+  width: 151px;
+  padding: 30px;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 120%;
+  margin-bottom: 40px;
+}
+.portal-idle-link-code-wrapper {
+  padding: 18px;
+  background: #f5f5f5;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin: auto;
+  width: 236px;
+  height: 273px;
+}
+
+.portal-cards-grid {
+  display: flex;
+  width: 100%;
+}
+
+.idle-sale-marker-wrapper {
+  display: flex;
+  width: 220.148px;
+  height: 53.605px;
+  transform: rotate(-6.509deg);
+  padding: 5px 30px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: #0ba51d;
+  color: #fff;
+}
+
+.idle-sale-heading {
+  color: #fff;
+  text-align: center;
+
+  font-size: 75px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 100%;
+}
+
+.idle-sale-subheading {
+  color: #fff;
+  text-align: center;
+
+  font-size: 39px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 120%;
+}
+
+.idle-close-button {
+  display: inline-flex;
+  padding: 64px 140px;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #00000013;
+  font-size: 48px;
+  border: 3px solid rgba(0, 0, 0, 0.07);
+}

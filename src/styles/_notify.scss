@@ -1,0 +1,57 @@
+.notify-bg {
+  width: 1634px;
+  height: 1634px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--main-color-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notify-circle-content-wrapper {
+  width: 991px;
+  height: 991px;
+  background-color: #fff;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 70px;
+}
+.portal-content.notify {
+  top: 45%;
+}
+.circular-progressbar {
+  width: 400px;
+  & div {
+    width: 100%;
+  }
+}
+
+
+.counter-number {
+  color: #000;
+
+  font-size: 100px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%;
+}
+
+.c{
+   color: rgb(255, 106, 20)
+}
+.double-buttons-wrapper{
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.notify-button{
+  display: flex;
+  align-items: center;
+  width: 268px;
+}

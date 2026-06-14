@@ -1,0 +1,126 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectBuyStatus, selectCart, selectCartProducts, selectCartTotalSum } from '../redux/selectors/selectors';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCancelBuyProductsMutation } from '../api/storeApi';
+import { RiseLoader } from 'react-spinners';
+import { CartProductItem } from './CartProductItem';
+import ScrollbarsLib from 'react-custom-scrollbars-2';
+const Scrollbars = (ScrollbarsLib as any).default ?? ScrollbarsLib;
+import { setBuyStatus } from '../redux/features/buyStatus';
+import { socket } from '../routes/root';
+import { CartTimer } from './CartTimer';
+
+export const Cart = () => {
+  const cart = useSelector(selectCart);
+  const [cancelFunction, cancelData] = useCancelBuyProductsMutation();
+  const buyStatus = useSelector(selectBuyStatus);
+  const cartProducts = useSelector(selectCartProducts);
+  const totalSum = useSelector(selectCartTotalSum);
+  const [showPaymentWaiting, setShowPaymentWaiting] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+  const [currentPaymentCount, setCurrentPaymentCount] = useState(1);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.once('secondPayment', () => setCurrentPaymentCount(2));
+    return () => {
+      socket.off('secondPayment');
+      setCurrentPaymentCount(1);
+    };
+  }, []);
+
+  useEffect(() => {
+    dispatch(setBuyStatus({ status: null, message: '' }));
+    setShowLoader(false);
+  }, []);
+
+  useEffect(() => {
+    if (cancelData.isSuccess) setShowLoader(false);
+  }, [cancelData]);
+
+  useEffect(() => {
+    if (buyStatus.status === 'fetching' || buyStatus.status === 'loading') {
+      setShowPaymentWaiting(true);
+    }
+    if (buyStatus.status === 'error' || buyStatus.status === 'cancelled') {
+      setShowPaymentWaiting(false);
+    }
+    if (buyStatus.status === 'success') navigate('/success');
+  }, [buyStatus]);
+
+  const cancelBuyButtonHandler = () => {
+    cancelFunction(undefined);
+    setShowLoader(true);
+  };
+
+  return (
+    <div className="cart-container">
+      {showPaymentWaiting && (
+        <div className="payment-wait-container">
+          <CartTimer
+            start={showPaymentWaiting}
+            currentPaymentCount={currentPaymentCount}
+          />
+          <div className="empty-cart-notification-outer-wrapper">
+            <div className="empty-cart-notification-wrapper">
+              {cart.separatePayment && (
+                <>
+                  <p className="notification-light-text">Буде проведено 2 оплати</p>
+                  {currentPaymentCount === 1 && <p className="notification-light-text">Проведіть першу оплату в терміналі</p>}
+                  {currentPaymentCount === 2 && <p className="notification-light-text">Проведіть другу оплату в терміналі</p>}
+                </>
+              )}
+              {!cart.separatePayment && <p className="notification-light-text">Для оплати скористайтесь терміналом</p>}
+              <p className="notification-light-text">Сума до сплати: {totalSum} грн.</p>
+              <div className="cart-paymnent-icon">
+                <img src="img/icons/mobile.png" alt="" />
+              </div>
+              <button className="cancel-buy-button" onClick={cancelBuyButtonHandler} disabled={showLoader}>
+                {showLoader ? <RiseLoader /> : 'Відміна'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cartProducts.length > 0 ? (
+        <div className="cartlist-wrapper">
+          <div className="cartlist-head">
+            <div className="cartlist-head-item"><p>Продукт</p></div>
+            <div className="cartlist-head-item"><p>Кількість</p></div>
+            <div className="cartlist-head-item"><p>Вартість</p></div>
+          </div>
+          <div className="cart-list-scroll-wrapper">
+            <Scrollbars
+              renderTrackVertical={(props: React.HTMLProps<HTMLDivElement>) => <div {...props} className="track-vertical" />}
+              renderThumbVertical={(props: React.HTMLProps<HTMLDivElement>) => <div {...props} className="thumb-vertical" />}
+              style={{ width: '100%', height: '90%' }}
+              thumbSize={190}
+              hideTracksWhenNotNeeded={true}
+            >
+              <div className="cart-list">
+                {cartProducts.map((el) => {
+                  if (el.isComboChild) return null;
+                  return <CartProductItem key={el.isComboParent ? 'parent' + el.id : el.id} product={el} />;
+                })}
+              </div>
+            </Scrollbars>
+          </div>
+        </div>
+      ) : (
+        <div className="epmty-cart-wrapper">
+          <div className="empty-cart-notification-outer-wrapper">
+            <div className="empty-cart-notification-wrapper">
+              <h1>Ой, товари відсутні</h1>
+              <Link to="/products" className="footer-counter-btn footer-counter-outlined-btn">
+                Повернутися до покупок
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,21 @@
+.subcategories-wrapper {
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: auto;
+}
+
+.subcategories-heading {
+  color: var(--text-color-main);
+
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 120%;
+}
+.subcategories-button {
+  border-radius: 50px;
+  border: 1px solid #c4c4c4;
+  background: #fff;
+}

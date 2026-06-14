@@ -1,0 +1,23 @@
+import { RootState } from '../store';
+
+export const selectCategories = (state: RootState) => state.categories;
+export const selectFilter = (state: RootState) => state.filter;
+export const selectCart = (state: RootState) => state.cart;
+export const selectCartProducts = (state: RootState) => state.cart.cartProducts;
+export const selectCartTotalSum = (state: RootState) => state.cart.cartTotalSum;
+export const selectAuthorization = (state: RootState) => state.authLocal;
+export const selectSearch = (state: RootState) => state.search;
+export const selectDetailedProduct = (state: RootState) => state.detailedProduct;
+export const selectTotalSelected = (state: RootState) => state.selectedQuantity.totalSelected;
+export const selectMaxAvailable = (state: RootState) => state.selectedQuantity.maxAvailable;
+export const selectTotalRemain = (state: RootState) => state.selectedQuantity.totalRemain;
+export const selectMainSelected = (state: RootState) => state.selectedQuantity.mainSelected;
+export const selectChildSelected = (state: RootState) => state.selectedQuantity.childSelected;
+export const selectSubcategories = (state: RootState) => state.subcategories.subcategoryList;
+export const selectDivisions = (state: RootState) => state.subcategories.divisions;
+export const selectReciept = (state: RootState) => state.reciept;
+export const selectBuyStatus = (state: RootState) => state.buyStatus;
+export const selectTerminalState = (state: RootState) => state.terminalState;
+export const selectMerchant = (state: RootState) => state.merchant;
+export const selectShowConfirm = (state: RootState) => state.showAddConfirm;
+export const selectNotify = (state: RootState) => state.notify;
