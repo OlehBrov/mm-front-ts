@@ -174,7 +174,7 @@ export const Products = () => {
               <Scrollbars
                 ref={scrollRef}
                 renderTrackVertical={TrackVertical}
-                renderThumbVertical={(props) => ThumbVertical(props as Record<string, unknown>, scrollRef as never)}
+                renderThumbVertical={(props: Record<string, unknown>) => ThumbVertical(props, scrollRef as never)}
                 style={{ width: 740 }}
                 thumbSize={190}
                 autoHeight
