@@ -59,6 +59,12 @@ export const Cart = () => {
     <div className="cart-container">
       {showPaymentWaiting && (
         <div className="payment-wait-container">
+          {showLoader && (
+            <div className="cancel-overlay">
+              <RiseLoader color="#ffffff" />
+              <p className="cancel-overlay-text">Скасування платежу...</p>
+            </div>
+          )}
           <CartTimer
             start={showPaymentWaiting}
             currentPaymentCount={currentPaymentCount}
@@ -78,7 +84,7 @@ export const Cart = () => {
                 <img src="img/icons/mobile.png" alt="" />
               </div>
               <button className="cancel-buy-button" onClick={cancelBuyButtonHandler} disabled={showLoader}>
-                {showLoader ? <RiseLoader /> : 'Відміна'}
+                Відміна
               </button>
             </div>
           </div>

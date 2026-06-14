@@ -173,6 +173,25 @@
   line-height: 100%;
 }
 
+.cancel-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.cancel-overlay-text {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .cancel-buy-button {
   position: absolute;
   color: #fff;
