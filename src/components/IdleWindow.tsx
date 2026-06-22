@@ -5,7 +5,7 @@ import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectBuyStatus, selectNotify } from '../redux/selectors/selectors';
-import { useCancelBuyProductsMutation, useGetStoreSaleProductsQuery } from '../api/storeApi';
+import { useCancelBuyProductsMutation, useGetScreensaverActiveQuery, useGetStoreSaleProductsQuery } from '../api/storeApi';
 import { ProductCard } from './ProductCard';
 import { QRCode } from 'react-qr-code';
 import { clearBuyStatus } from '../redux/features/buyStatus';
@@ -18,6 +18,7 @@ interface Props {
 export const IdleWindow = ({ onClose }: Props) => {
   const { isIdleOpen } = useSelector(selectNotify);
   const { isSuccess, data } = useGetStoreSaleProductsQuery();
+  const { data: screensaver } = useGetScreensaverActiveQuery(undefined, { skip: !isIdleOpen });
   const [cancelFunction] = useCancelBuyProductsMutation();
   const buyStatus = useSelector(selectBuyStatus);
   const dispatch = useDispatch();
@@ -43,23 +44,40 @@ export const IdleWindow = ({ onClose }: Props) => {
     onClose();
   };
 
+  const hasScreensaver = !!(screensaver?.filename && screensaver.url);
+  const hasSale = data.products.length > 0;
+
   return ReactDOM.createPortal(
-    <div className="portal-overlay">
-      <div className="red-decor">
-        <div className="idle-circle idle-circle-1" />
-        <div className="idle-circle idle-circle-2" />
-        <div className="idle-circle idle-circle-3" />
-        <div className="light-shadow" />
-      </div>
-      <div className={`portal-content ${!data.products.length ? 'no-slider' : ''}`}>
-        {!data.products.length && (
+    <div
+      className={`portal-overlay${hasScreensaver ? ' screensaver-active' : ''}`}
+      onClick={hasScreensaver ? handleCloseButton : undefined}
+    >
+      {/* ── Background: media or CSS circles ── */}
+      {hasScreensaver ? (
+        screensaver!.type === 'video' ? (
+          <video className="screensaver-media" src={screensaver!.url!} autoPlay loop muted playsInline />
+        ) : (
+          <img className="screensaver-media" src={screensaver!.url!} alt="screensaver" />
+        )
+      ) : (
+        <div className="red-decor">
+          <div className="idle-circle idle-circle-1" />
+          <div className="idle-circle idle-circle-2" />
+          <div className="idle-circle idle-circle-3" />
+          <div className="light-shadow" />
+        </div>
+      )}
+
+      {/* ── Content: sale slider or logo ── */}
+      <div className={`portal-content ${!hasSale ? 'no-slider' : ''}`}>
+        {!hasSale && (
           <div className="no-sale-idle-logo-wrapper">
             <p className="screen-saver-logo">
               <span className="highlight-logo">NEXT</span>RETAIL
             </p>
           </div>
         )}
-        {data.products.length > 0 && (
+        {hasSale && (
           <>
             <div className="idle-sale-marker-wrapper">
               <p className="idle-sale-marker-text">Акція дня</p>
@@ -93,28 +111,32 @@ export const IdleWindow = ({ onClose }: Props) => {
           </button>
         </div>
       </div>
-      <div className="portal-idle-footer">
-        <div className="portal-idle-footer-text-wrapper">
-          <p className="portal-idle-footer-heading">Цікавлять комплексні рішення для Вашої компанії?</p>
-          <p className="portal-idle-footer-text">
-            Ми пропонуємо широкий спектр послуг від встановлення мікромаркетів, вендингових апаратів, кавомашин, пуріфаєрів до їх обслуговування
-          </p>
-        </div>
-        <div className="portal-idle-link-wrapper">
-          <div className="portal-idle-link-txt-wrapper">Дізнатись більше можна тут</div>
-          <div className="portal-idle-link-code-wrapper">
-            <div className="qr-link-wrap">
-              <QRCode
-                size={180}
-                style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                value="https://nextretail.com.ua"
-                viewBox="0 0 180 180"
-              />
+
+      {/* ── Footer with QR: only in default CSS mode ── */}
+      {!hasScreensaver && (
+        <div className="portal-idle-footer">
+          <div className="portal-idle-footer-text-wrapper">
+            <p className="portal-idle-footer-heading">Цікавлять комплексні рішення для Вашої компанії?</p>
+            <p className="portal-idle-footer-text">
+              Ми пропонуємо широкий спектр послуг від встановлення мікромаркетів, вендингових апаратів, кавомашин, пуріфаєрів до їх обслуговування
+            </p>
+          </div>
+          <div className="portal-idle-link-wrapper">
+            <div className="portal-idle-link-txt-wrapper">Дізнатись більше можна тут</div>
+            <div className="portal-idle-link-code-wrapper">
+              <div className="qr-link-wrap">
+                <QRCode
+                  size={180}
+                  style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                  value="https://nextretail.com.ua"
+                  viewBox="0 0 180 180"
+                />
+              </div>
+              <p>www.nextretail.com.ua</p>
             </div>
-            <p>www.nextretail.com.ua</p>
           </div>
         </div>
-      </div>
+      )}
     </div>,
     portalRoot
   );

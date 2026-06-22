@@ -1,13 +1,73 @@
 .sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 1495px;
+
+  // Fade-gradient — підказка що нижче є ще категорії
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 1) 30%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
 }
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.filter-list-top {
+  flex-shrink: 0;
+  // Фіксований відступ між "Новинки" і категоріями — не прокручується
+  margin-bottom: 110px;
+  box-shadow: 0px 6px 12px -4px rgba(0, 0, 0, 0.12);
+  z-index: 1;
+
+  .filter-item:nth-child(2) .filter-label {
+    padding: 30px 20px;
+  }
+}
+
+.filter-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: visible;
+
+  // Тонкий скролбар як візуальна підказка
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+  }
+
+  // Відступ після останньої картки — щоб вона виходила вище градієнта
+  padding-bottom: 110px;
+
+  // Внутрішні падінги категорій
+  .filter-label {
+    padding: 25px 20px;
+    height: auto;
+    white-space: normal;
+  }
+}
+
 .filter-item {
   display: flex;
-  &:nth-child(2) {
-    margin-bottom: 110px;
-    & .filter-label {
-      padding: 30px 20px;
-    }
-  }
 }
 
 
@@ -64,19 +124,22 @@
   background-color: #4b4b5c7a;
 }
 
-.filter-item:first-child > .filter-label{
-border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+.filter-list-top {
+  .filter-item:first-child > .filter-label {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  }
+
+  .filter-item:nth-child(2) > .filter-label {
+    border-top: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  }
 }
 
-.filter-item:nth-child(2) > .filter-label {
-border-top: none;
-border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
-}
-
-.filter-item:last-child > .filter-label {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
+.filter-list-scroll {
+  .filter-item:last-child > .filter-label {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
+  }
 }
 
 .filter-label-text {

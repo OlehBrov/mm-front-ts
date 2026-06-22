@@ -128,6 +128,13 @@ export const storeApi = createApi({
     getMerchantData: build.query<import('../types').MerchantData, void>({
       query: () => ({ url: '/config/merchant', method: 'GET' }),
     }),
+    getScreensaverActive: build.query<{
+      filename: string | null;
+      type: 'image' | 'video' | null;
+      url: string | null;
+    }, void>({
+      query: () => ({ url: '/screensaver/active', method: 'GET' }),
+    }),
   }),
 });
 
@@ -142,4 +149,5 @@ export const {
   useGetSingleProductQuery,
   useGetStoreSaleProductsQuery,
   useGetMerchantDataQuery,
+  useGetScreensaverActiveQuery,
 } = storeApi;

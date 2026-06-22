@@ -246,3 +246,41 @@
   font-size: 48px;
   border: 3px solid rgba(0, 0, 0, 0.07);
 }
+
+// ── Screensaver mode ──────────────────────────────────────────────────────────
+
+.screensaver-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 0;
+}
+
+.portal-overlay.screensaver-active {
+  background-color: transparent;
+  cursor: pointer;
+
+  // Reset offset so flex centering takes over without footer
+  .portal-content {
+    top: 0;
+    transform: none;
+  }
+
+  // Ensure text is legible over any screensaver image/video
+  .idle-sale-heading,
+  .idle-sale-subheading {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+  }
+
+  .idle-close-button {
+    background-color: rgba(0, 0, 0, 0.45);
+    border-color: rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+  }
+}

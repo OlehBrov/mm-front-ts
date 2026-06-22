@@ -13,7 +13,7 @@ import { CartTimer } from './CartTimer';
 
 export const Cart = () => {
   const cart = useSelector(selectCart);
-  const [cancelFunction, cancelData] = useCancelBuyProductsMutation();
+  const [cancelFunction] = useCancelBuyProductsMutation();
   const buyStatus = useSelector(selectBuyStatus);
   const cartProducts = useSelector(selectCartProducts);
   const totalSum = useSelector(selectCartTotalSum);
@@ -37,15 +37,12 @@ export const Cart = () => {
   }, []);
 
   useEffect(() => {
-    if (cancelData.isSuccess) setShowLoader(false);
-  }, [cancelData]);
-
-  useEffect(() => {
     if (buyStatus.status === 'fetching' || buyStatus.status === 'loading') {
       setShowPaymentWaiting(true);
     }
     if (buyStatus.status === 'error' || buyStatus.status === 'cancelled') {
       setShowPaymentWaiting(false);
+      setShowLoader(false);
     }
     if (buyStatus.status === 'success') navigate('/success');
   }, [buyStatus]);
@@ -57,14 +54,14 @@ export const Cart = () => {
 
   return (
     <div className="cart-container">
+      {showLoader && (
+        <div className="cancel-overlay">
+          <RiseLoader color="#ffffff" />
+          <p className="cancel-overlay-text">Скасування платежу...</p>
+        </div>
+      )}
       {showPaymentWaiting && (
         <div className="payment-wait-container">
-          {showLoader && (
-            <div className="cancel-overlay">
-              <RiseLoader color="#ffffff" />
-              <p className="cancel-overlay-text">Скасування платежу...</p>
-            </div>
-          )}
           <CartTimer
             start={showPaymentWaiting}
             currentPaymentCount={currentPaymentCount}
