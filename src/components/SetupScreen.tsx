@@ -152,6 +152,7 @@ interface CheckResult {
   online: boolean;
   merchants: MerchantInfo[];
   error?: string;
+  terminalConfig?: { host: string | null; port: number | null } | null;
 }
 
 function TerminalCard({
@@ -217,6 +218,14 @@ function TerminalCard({
     try {
       const result = await apiFetch<CheckResult>(`/setup/terminal/${bank}/check`, { method: 'POST' });
       setCheckResult(result);
+      // Pre-fill form with actual DB values the server is connected to
+      if (result.online && result.terminalConfig) {
+        setForm((f) => ({
+          ...f,
+          host: result.terminalConfig?.host ?? f.host,
+          port: result.terminalConfig?.port ?? f.port,
+        }));
+      }
       onChecked(result);
     } catch (e) {
       const r = { online: false, merchants: [], error: (e as Error).message };
