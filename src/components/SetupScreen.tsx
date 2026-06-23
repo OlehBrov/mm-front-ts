@@ -44,8 +44,9 @@ interface SetupData {
 interface TokenStatus {
   valid: boolean;
   errortxt: string;
-  shift_status?: number;
-  online_status?: number;
+  shift_status?: number;  // -1 unknown, 0 closed, 1 open, 2 blocked
+  shift_dt?: string;      // YYYYMMDDHHMMSS | "0" | ""
+  online_status?: number; // -1 unknown, 0 online, 1 offline, 2 blocked
 }
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
@@ -300,6 +301,34 @@ function TerminalCard({
   );
 }
 
+// ─── Token status helpers ─────────────────────────────────────────────────────
+
+function formatShift(status?: number, dt?: string): string {
+  switch (status) {
+    case 1: {
+      if (dt && dt !== '0' && dt !== '') {
+        // YYYYMMDDHHMMSS → DD.MM.YYYY HH:MM
+        const d = dt.padEnd(14, '0');
+        const fmt = `${d.slice(6, 8)}.${d.slice(4, 6)}.${d.slice(0, 4)} ${d.slice(8, 10)}:${d.slice(10, 12)}`;
+        return `зміна відкрита з ${fmt}`;
+      }
+      return 'зміна відкрита';
+    }
+    case 0:  return 'зміна закрита';
+    case 2:  return 'зміна заблокована';
+    default: return 'зміна невідома';
+  }
+}
+
+function formatOnline(status?: number): string {
+  switch (status) {
+    case 0:  return 'ДФС онлайн';
+    case 1:  return 'ДФС офлайн';
+    case 2:  return 'ДФС заблоковано';
+    default: return 'ДФС невідомо';
+  }
+}
+
 // ─── Fiscal merchant card ─────────────────────────────────────────────────────
 
 function FiscalCard({
@@ -416,7 +445,7 @@ function FiscalCard({
         <div style={{ margin: '8px 0' }}>
           <span className={`status-badge ${tokenStatus.valid ? 'ok' : 'err'}`}>
             {tokenStatus.valid
-              ? `✓ Активний · зміна ${tokenStatus.shift_status === 1 ? 'відкрита' : 'закрита'} · ${tokenStatus.online_status === 1 ? 'онлайн' : 'офлайн'}`
+              ? `✓ Активний · ${formatShift(tokenStatus.shift_status, tokenStatus.shift_dt)} · ${formatOnline(tokenStatus.online_status)}`
               : `✗ ${tokenStatus.errortxt || 'Недійсний'}`}
           </span>
         </div>
