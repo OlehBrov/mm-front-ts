@@ -23,11 +23,25 @@ interface TerminalConfig {
   port: number | null;
 }
 
+const TAXGRP_OPTIONS = [
+  { value: 1,  label: '1 — ПДВ 20%' },
+  { value: 2,  label: '2 — Без ПДВ' },
+  { value: 3,  label: '3 — ПДВ 20% + акциз 5%' },
+  { value: 4,  label: '4 — ПДВ 7%' },
+  { value: 5,  label: '5 — ПДВ 0%' },
+  { value: 6,  label: '6 — Без ПДВ + акциз 5%' },
+  { value: 7,  label: '7 — Не є об\'єктом ПДВ' },
+  { value: 8,  label: '8 — ПДВ 20% + ПФ 7.5%' },
+  { value: 9,  label: '9 — ПДВ 14%' },
+  { value: 10, label: '10 — ПДФО 18% ВЗ 1.5%' },
+] as const;
+
 interface FiscalConfig {
   merchant_id: string;
   merchant_name: string | null;
   merchant_code: string | null;
   fiscal_token: string | null;
+  taxgrp: number | null;
 }
 
 interface MerchantInfo {
@@ -346,6 +360,7 @@ function FiscalCard({
     merchant_name: config?.merchant_name ?? '',
     merchant_code: config?.merchant_code ?? '',
     fiscal_token: config?.fiscal_token ?? '',
+    taxgrp: config?.taxgrp ?? null as number | null,
   });
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -357,6 +372,7 @@ function FiscalCard({
       merchant_name: config?.merchant_name ?? '',
       merchant_code: config?.merchant_code ?? '',
       fiscal_token: config?.fiscal_token ?? '',
+      taxgrp: config?.taxgrp ?? null,
     });
     setTokenStatus(null);
   }, [config]);
@@ -374,6 +390,7 @@ function FiscalCard({
             merchant_name: form.merchant_name || undefined,
             merchant_code: form.merchant_code || undefined,
             fiscal_token: form.fiscal_token || null,
+            taxgrp: form.taxgrp ?? null,
           }),
         },
       );
@@ -421,6 +438,18 @@ function FiscalCard({
       <div className="form-row">
         <label>ЄДРПОУ (для ТОВ) або ІПН (для ФОП) *</label>
         <input value={form.merchant_code} onChange={set('merchant_code')} placeholder="12345678" />
+      </div>
+      <div className="form-row">
+        <label>Код податкової групи (taxgrp) *</label>
+        <select
+          value={form.taxgrp ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, taxgrp: e.target.value ? Number(e.target.value) : null }))}
+        >
+          <option value="">— оберіть —</option>
+          {TAXGRP_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
       </div>
       <div className="form-row">
         <label>Токен Вчасно Каса *</label>
