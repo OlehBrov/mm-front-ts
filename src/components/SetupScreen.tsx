@@ -11,6 +11,8 @@ interface StoreInfo {
   store_address: string | null;
   active_bank: string | null;
   alert_email: string | null;
+  support_email: string | null;
+  feedback_email: string | null;
   default_merchant: string | null;
   VAT_excise_merchant: string | null;
   is_single_merchant: boolean | null;
@@ -100,6 +102,8 @@ function StoreCard({
     store_name: store?.store_name ?? '',
     store_address: store?.store_address ?? '',
     alert_email: store?.alert_email ?? '',
+    support_email: store?.support_email ?? '',
+    feedback_email: store?.feedback_email ?? '',
   });
   const [saving, setSaving] = useState(false);
   const [fb, setFb] = useState({ msg: '', err: false });
@@ -109,6 +113,8 @@ function StoreCard({
       store_name: store?.store_name ?? '',
       store_address: store?.store_address ?? '',
       alert_email: store?.alert_email ?? '',
+      support_email: store?.support_email ?? '',
+      feedback_email: store?.feedback_email ?? '',
     });
   }, [store]);
 
@@ -123,6 +129,8 @@ function StoreCard({
           store_address: form.store_address || undefined,
           active_bank: activeBank,
           alert_email: form.alert_email || null,
+          support_email: form.support_email || null,
+          feedback_email: form.feedback_email || null,
         }),
       });
       setFb({ msg: '✓ Збережено', err: false });
@@ -150,7 +158,15 @@ function StoreCard({
       </div>
       <div className="form-row">
         <label>Email для сповіщень про помилки фіскалізації</label>
-        <input type="email" value={form.alert_email} onChange={set('alert_email')} placeholder="admin@example.com" />
+        <input type="email" value={form.alert_email} onChange={set('alert_email')} placeholder="fiscal@example.com" />
+      </div>
+      <div className="form-row">
+        <label>Email технічної підтримки</label>
+        <input type="email" value={form.support_email} onChange={set('support_email')} placeholder="support@example.com" />
+      </div>
+      <div className="form-row">
+        <label>Email для щоденного звіту по оцінках (01:00)</label>
+        <input type="email" value={form.feedback_email} onChange={set('feedback_email')} placeholder="manager@example.com" />
       </div>
       <div className="form-actions">
         <button className="btn btn-primary" onClick={save} disabled={saving}>
