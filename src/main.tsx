@@ -13,6 +13,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { SuccessPurchasePage } from './components/SuccessPurchasePage';
 import { SearchResultsPage } from './components/SearchResultsPage';
 import { ProductDetails } from './components/ProductDetails';
+import { SetupScreen } from './components/SetupScreen';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
@@ -55,6 +56,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               }
             />
           </Route>
+        <Route path="/setup" element={<SetupScreen />} />
         </Routes>
       </HashRouter>
     </PersistGate>

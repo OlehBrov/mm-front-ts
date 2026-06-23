@@ -1,0 +1,226 @@
+.setup-screen {
+  min-height: 100vh;
+  background: #0f1117;
+  color: #e2e8f0;
+  font-family: 'FixelDisplay', sans-serif;
+  padding: 32px;
+  box-sizing: border-box;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 32px;
+    color: #fff;
+    border-bottom: 2px solid #2d3748;
+    padding-bottom: 16px;
+  }
+
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1200px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .setup-card {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 24px;
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 20px;
+      color: #a0aec0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  .form-row {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #a0aec0;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      padding: 10px 14px;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border-color 0.15s;
+
+      &:focus {
+        outline: none;
+        border-color: #4299e1;
+      }
+
+      &::placeholder {
+        color: #4a5568;
+      }
+    }
+
+    select option {
+      background: #1a202c;
+    }
+  }
+
+  .form-row-inline {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: flex-end;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+
+    &:active { transform: scale(0.97); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    &.btn-primary {
+      background: #4299e1;
+      color: #fff;
+      &:hover:not(:disabled) { background: #3182ce; }
+    }
+
+    &.btn-ghost {
+      background: #2d3748;
+      color: #e2e8f0;
+      &:hover:not(:disabled) { background: #3d4a5c; }
+    }
+
+    &.btn-danger {
+      background: transparent;
+      color: #fc8181;
+      border: 1px solid #fc8181;
+      padding: 8px 14px;
+      &:hover:not(:disabled) { background: rgba(252,129,129,0.1); }
+    }
+
+    &.btn-verify {
+      background: #2d3748;
+      color: #68d391;
+      border: 1px solid #48bb78;
+      &:hover:not(:disabled) { background: rgba(72,187,120,0.1); }
+    }
+  }
+
+  .form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-top: 8px;
+
+    &.ok { background: rgba(72,187,120,0.15); color: #68d391; }
+    &.error { background: rgba(252,129,129,0.15); color: #fc8181; }
+    &.warning { background: rgba(246,173,85,0.15); color: #f6ad55; }
+  }
+
+  .fiscal-merchant {
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #0f1117;
+
+    &:last-child { margin-bottom: 0; }
+
+    .merchant-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+
+      .merchant-id {
+        font-size: 13px;
+        color: #a0aec0;
+        background: #2d3748;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-family: monospace;
+      }
+
+      .merchant-role {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #4299e1;
+      }
+    }
+  }
+
+  .fiscal-new {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #2d3748;
+
+    input {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      padding: 10px 14px;
+      font-family: inherit;
+      &:focus { outline: none; border-color: #4299e1; }
+      &::placeholder { color: #4a5568; }
+    }
+  }
+
+  .save-feedback {
+    font-size: 12px;
+    margin-top: 8px;
+    &.ok { color: #68d391; }
+    &.error { color: #fc8181; }
+  }
+}
