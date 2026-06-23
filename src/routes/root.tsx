@@ -49,6 +49,8 @@ import { CartProduct, Product } from '../types';
 
 const auth_id = 998877;
 
+const API = import.meta.env.VITE_API_URL ?? 'http://localhost:6006/api';
+
 const IDLE_EVENTS: EventsType[] = [
   'mousemove', 'keydown', 'keypress', 'wheel', 'DOMMouseScroll',
   'mousewheel', 'mousedown', 'touchstart', 'touchmove',
@@ -143,6 +145,20 @@ export const Root = () => {
   useEffect(() => {
     setNavigate(navigate);
   }, [navigate]);
+
+  // On first mount: check that all required config exists in DB.
+  // If anything is missing — redirect to setup screen before the kiosk starts.
+  useEffect(() => {
+    fetch(`${API}/setup/ready`)
+      .then((r) => r.json())
+      .then(({ ready }: { ready: boolean }) => {
+        if (!ready) navigate('/setup');
+      })
+      .catch(() => {
+        // If the check itself fails (server down etc.) — let kiosk proceed,
+        // it will show its own connection errors as usual.
+      });
+  }, []);
 
   // When screen becomes active (idle closed or app mounted) — check terminal immediately,
   // then keep polling every 30s. Stops polling while screensaver is showing.
