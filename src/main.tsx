@@ -14,6 +14,8 @@ import { SuccessPurchasePage } from './components/SuccessPurchasePage';
 import { SearchResultsPage } from './components/SearchResultsPage';
 import { ProductDetails } from './components/ProductDetails';
 import { SetupScreen } from './components/SetupScreen';
+import { SalesSettingsScreen } from './components/SalesSettingsScreen';
+import { SetupAuthGate } from './components/SetupAuthGate';
 import { MaintenanceCover } from './components/MaintenanceCover';
 import { RootState } from './redux/store';
 
@@ -64,7 +66,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               }
             />
           </Route>
-        <Route path="/setup" element={<SetupScreen />} />
+        <Route path="/setup" element={<SetupAuthGate />}>
+          <Route index element={<SetupScreen />} />
+          <Route path="sales" element={<SalesSettingsScreen />} />
+        </Route>
         </Routes>
       </HashRouter>
     </PersistGate>

@@ -163,6 +163,19 @@
   }
 }
 
+// ── Standalone setup password gate (guards direct URL access to /setup) ────────
+
+.setup-auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: #0d1117;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'FixelDisplay', sans-serif;
+}
+
 .maintenance-dialog-btn {
   font-size: 32px;
   padding: 14px 36px;

@@ -52,6 +52,12 @@ const auth_id = 998877;
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:6006/api';
 
+// Scanning this barcode opens the config screen (still password-gated by SetupAuthGate).
+// 14 digits — deliberately doesn't collide with real product barcodes (EAN-13 = 13 digits,
+// UPC-A = 12); a barcode scanner is just a keyboard-wedge, so there's no length limit on
+// its side beyond what the symbology on the label encodes.
+const CONFIG_BARCODE = import.meta.env.VITE_CONFIG_BARCODE ?? '';
+
 const IDLE_EVENTS: EventsType[] = [
   'mousemove', 'keydown', 'keypress', 'wheel', 'DOMMouseScroll',
   'mousewheel', 'mousedown', 'touchstart', 'touchmove',
@@ -233,6 +239,13 @@ export const Root = () => {
   }, [merchantData.data]);
 
   const barCodeHandler = (code: string) => {
+    if (CONFIG_BARCODE && code === CONFIG_BARCODE) {
+      if (isIdleOpen) handleIdleClose();
+      barcode = '';
+      navigate('/setup');
+      return;
+    }
+
     if (isIdleOpen) handleIdleClose();
 
     const latestIsIdleOpen = store.getState().notify.isIdleOpen;

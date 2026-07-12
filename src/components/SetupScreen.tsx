@@ -850,6 +850,7 @@ function LaunchSection({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function SetupScreen() {
+  const navigate = useNavigate();
   const [setup, setSetup] = useState<SetupData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -950,7 +951,12 @@ export function SetupScreen() {
 
   return (
     <div className="setup-screen">
-      <h1>Налаштування кіоску</h1>
+      <div className="setup-header">
+        <h1>Налаштування кіоску</h1>
+        <button className="btn btn-ghost" onClick={() => navigate('/setup/sales')}>
+          🏷️ Налаштування акцій
+        </button>
+      </div>
 
       <p className="setup-section-label">Магазин</p>
       <div className="setup-row col-1">

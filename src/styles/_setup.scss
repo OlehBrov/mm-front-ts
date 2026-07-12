@@ -15,6 +15,15 @@
     padding-bottom: 16px;
   }
 
+  .setup-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    h1 { flex: 1; }
+  }
+
   .setup-section-label {
     font-size: 11px;
     font-weight: 700;
@@ -347,6 +356,125 @@
     font-size: 14px;
     border: 1px dashed #21262d;
     border-radius: 8px;
+  }
+
+  // ── Sales list ────────────────────────────────────────────────────────────
+
+  .sales-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sale-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 18px 22px;
+    transition: opacity 0.15s, border-color 0.15s;
+
+    &.sale-inactive {
+      opacity: 0.55;
+      border-color: #21262d;
+    }
+  }
+
+  .sale-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .sale-row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sale-id-chip {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 600;
+    background: #21262d;
+    color: #8b949e;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .sale-row-desc {
+    font-size: 13px;
+    color: #8b949e;
+  }
+
+  .sale-row-discounts {
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .discount-chip {
+    font-size: 12px;
+    font-weight: 600;
+    color: #d29922;
+    background: rgba(210, 153, 34, 0.12);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  .sale-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  // ── Toggle switch ─────────────────────────────────────────────────────────
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+
+      &:checked + .toggle-slider { background: #238636; }
+      &:checked + .toggle-slider::before { transform: translateX(20px); }
+      &:disabled + .toggle-slider { opacity: 0.5; cursor: not-allowed; }
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #30363d;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.15s;
+
+      &::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.15s;
+      }
+    }
   }
 
   // ── Launch section ────────────────────────────────────────────────────────

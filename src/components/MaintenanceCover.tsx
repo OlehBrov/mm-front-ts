@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { MaintenanceIcon } from './icons/MaintenanceIcon';
 import { setMaintenanceMode } from '../redux/features/maintenanceSlice';
+import { unlockSetup } from '../redux/features/setupAuthSlice';
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:6006/api';
 
@@ -62,6 +63,7 @@ export const MaintenanceCover = () => {
       });
       if (res.ok) {
         dispatch(setMaintenanceMode(false));
+        dispatch(unlockSetup());
         navigate('/setup');
       } else {
         setError('Невірний пароль');

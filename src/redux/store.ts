@@ -30,6 +30,7 @@ import terminalStateReducer from './features/terminalSlice';
 import merchantReducer from './features/merchantsSlice';
 import notifyReducer from './features/notifySlice';
 import maintenanceReducer from './features/maintenanceSlice';
+import setupAuthReducer from './features/setupAuthSlice';
 import { storeApi } from '../api/storeApi';
 
 const persistConfig = { key: 'authLocal', storage };
@@ -54,6 +55,7 @@ export const store = configureStore({
     merchant: merchantReducer,
     notify: notifyReducer,
     maintenance: maintenanceReducer,
+    setupAuth: setupAuthReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
