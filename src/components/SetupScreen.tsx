@@ -65,6 +65,26 @@ interface TokenStatus {
   online_status?: number; // -1 unknown, 0 online, 1 offline, 2 blocked
 }
 
+interface MerchantVerification {
+  vchasno_merchant_name: string | null;
+  local_merchant_name: string | null;
+  vchasno_merchant_code: string | null;
+  local_merchant_code: string | null;
+  token_valid: boolean | null;
+}
+
+interface KioskConfigMerchant {
+  merchantId: string;
+  verification: MerchantVerification;
+}
+
+interface KioskConfigResponse {
+  fiscal: {
+    noVat: KioskConfigMerchant | null;
+    vat: KioskConfigMerchant | null;
+  };
+}
+
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
@@ -365,11 +385,13 @@ function FiscalCard({
   merchantId,
   role,
   config,
+  verification,
   onSaved,
 }: {
   merchantId: string;
   role: 'no-vat' | 'vat';
   config: FiscalConfig | undefined;
+  verification?: MerchantVerification;
   onSaved: (updated: FiscalConfig) => void;
 }) {
   const [form, setForm] = useState({
@@ -436,6 +458,11 @@ function FiscalCard({
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const nameMatch = !verification?.vchasno_merchant_name ||
+    verification.vchasno_merchant_name.trim().toLowerCase() === form.merchant_name.trim().toLowerCase();
+  const codeMatch = !verification?.vchasno_merchant_code ||
+    verification.vchasno_merchant_code.trim() === form.merchant_code.trim();
+
   return (
     <div className="setup-card">
       <div className="card-header">
@@ -447,13 +474,60 @@ function FiscalCard({
         </h2>
       </div>
 
+      {/* Vchasno name */}
+      {verification?.vchasno_merchant_name != null && (
+        <div className="form-row vchasno-row">
+          <label>Назва ТОВ / ФОП від Вчасно</label>
+          <input className="vchasno-input" value={verification.vchasno_merchant_name ?? '—'} disabled />
+        </div>
+      )}
       <div className="form-row">
-        <label>Назва ТОВ / ФОП *</label>
-        <input value={form.merchant_name} onChange={set('merchant_name')} placeholder="ТОВ «Назва компанії»" />
+        <label>
+          Назва ТОВ / ФОП *
+          {verification?.vchasno_merchant_name != null && nameMatch && (
+            <span className="vchasno-match-ok">✓ збігається</span>
+          )}
+        </label>
+        <div className="form-row-split">
+          <input value={form.merchant_name} onChange={set('merchant_name')} placeholder="ТОВ «Назва компанії»" />
+          {verification?.vchasno_merchant_name && !nameMatch && (
+            <button
+              className="btn btn-vchasno"
+              onClick={() => setForm(f => ({ ...f, merchant_name: verification.vchasno_merchant_name! }))}
+              title="Скопіювати назву від Вчасно"
+            >
+              ← Вчасно
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Vchasno code */}
+      {verification?.vchasno_merchant_code != null && (
+        <div className="form-row vchasno-row">
+          <label>ЄДРПОУ / ІПН від Вчасно</label>
+          <input className="vchasno-input" value={verification.vchasno_merchant_code ?? '—'} disabled />
+        </div>
+      )}
       <div className="form-row">
-        <label>ЄДРПОУ (для ТОВ) або ІПН (для ФОП) *</label>
-        <input value={form.merchant_code} onChange={set('merchant_code')} placeholder="12345678" />
+        <label>
+          ЄДРПОУ (для ТОВ) або ІПН (для ФОП) *
+          {verification?.vchasno_merchant_code != null && codeMatch && (
+            <span className="vchasno-match-ok">✓ збігається</span>
+          )}
+        </label>
+        <div className="form-row-split">
+          <input value={form.merchant_code} onChange={set('merchant_code')} placeholder="12345678" />
+          {verification?.vchasno_merchant_code && !codeMatch && (
+            <button
+              className="btn btn-vchasno"
+              onClick={() => setForm(f => ({ ...f, merchant_code: verification.vchasno_merchant_code! }))}
+              title="Скопіювати ЄДРПОУ / ІПН від Вчасно"
+            >
+              ← Вчасно
+            </button>
+          )}
+        </div>
       </div>
       <div className="form-row">
         <label>Код податкової групи (taxgrp) *</label>
@@ -513,6 +587,7 @@ function MerchantsSection({
   terminalMerchants,
   fiscalConfigs,
   terminalChecked,
+  merchantVerifications,
   onAssigned,
   onFiscalSaved,
 }: {
@@ -520,6 +595,7 @@ function MerchantsSection({
   terminalMerchants: MerchantInfo[];
   fiscalConfigs: FiscalConfig[];
   terminalChecked: boolean;
+  merchantVerifications: Record<string, MerchantVerification>;
   onAssigned: (noVat: string, vat: string | null) => void;
   onFiscalSaved: (updated: FiscalConfig) => void;
 }) {
@@ -665,6 +741,7 @@ function MerchantsSection({
                 merchantId={showNoVat}
                 role="no-vat"
                 config={fiscalByMerchant(showNoVat)}
+                verification={merchantVerifications[showNoVat]}
                 onSaved={onFiscalSaved}
               />
             )}
@@ -673,6 +750,7 @@ function MerchantsSection({
                 merchantId={showVat}
                 role="vat"
                 config={fiscalByMerchant(showVat)}
+                verification={merchantVerifications[showVat]}
                 onSaved={onFiscalSaved}
               />
             )}
@@ -691,12 +769,14 @@ function LaunchSection({
   terminalConfigs,
   fiscalConfigs,
   terminalChecked,
+  merchantVerifications,
 }: {
   store: StoreInfo | null;
   activeBank: string;
   terminalConfigs: TerminalConfig[];
   fiscalConfigs: FiscalConfig[];
   terminalChecked: boolean;
+  merchantVerifications: Record<string, MerchantVerification>;
 }) {
   const navigate = useNavigate();
 
@@ -706,6 +786,18 @@ function LaunchSection({
   const vatId = store?.VAT_excise_merchant;
   const noVatFiscal = fiscalConfigs.find((f) => f.merchant_id === noVatId);
   const vatFiscal = vatId ? fiscalConfigs.find((f) => f.merchant_id === vatId) : null;
+
+  const merchantDataMatches = (
+    verif: MerchantVerification | undefined,
+    fiscal: FiscalConfig | null | undefined,
+  ) => {
+    if (!verif) return false;
+    const nameOk = !verif.vchasno_merchant_name ||
+      verif.vchasno_merchant_name.trim().toLowerCase() === (fiscal?.merchant_name ?? '').trim().toLowerCase();
+    const codeOk = !verif.vchasno_merchant_code ||
+      verif.vchasno_merchant_code.trim() === (fiscal?.merchant_code ?? '').trim();
+    return nameOk && codeOk;
+  };
 
   const checks = [
     { label: 'Назва торгової точки', done: !!store?.store_name?.trim() },
@@ -717,6 +809,16 @@ function LaunchSection({
     { label: 'Токен Вчасно Каса для основного мерчанта', done: !!noVatFiscal?.fiscal_token },
     ...(vatId
       ? [{ label: 'Токен Вчасно Каса для ПДВ мерчанта', done: !!vatFiscal?.fiscal_token }]
+      : []),
+    {
+      label: `Дані мерчанта ${noVatId ?? '—'} (назва, ЄДРПОУ) відповідають даним Вчасно`,
+      done: merchantDataMatches(noVatId ? merchantVerifications[noVatId] : undefined, noVatFiscal),
+    },
+    ...(vatId
+      ? [{
+          label: `Дані мерчанта ${vatId} (назва, ЄДРПОУ) відповідають даним Вчасно`,
+          done: merchantDataMatches(merchantVerifications[vatId], vatFiscal),
+        }]
       : []),
   ];
 
@@ -755,6 +857,21 @@ export function SetupScreen() {
   const [terminalMerchants, setTerminalMerchants] = useState<MerchantInfo[]>([]);
   const [terminalChecked, setTerminalChecked] = useState(false);
   const [fiscalConfigs, setFiscalConfigs] = useState<FiscalConfig[]>([]);
+  const [merchantVerifications, setMerchantVerifications] = useState<Record<string, MerchantVerification>>({});
+
+  const fetchKioskConfig = useCallback(async () => {
+    try {
+      const data = await apiFetch<KioskConfigResponse>('/setup/kiosk-config');
+      const verifs: Record<string, MerchantVerification> = {};
+      if (data.fiscal.noVat?.merchantId) {
+        verifs[data.fiscal.noVat.merchantId] = data.fiscal.noVat.verification;
+      }
+      if (data.fiscal.vat?.merchantId) {
+        verifs[data.fiscal.vat.merchantId] = data.fiscal.vat.verification;
+      }
+      setMerchantVerifications(verifs);
+    } catch { /* non-critical */ }
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -763,12 +880,13 @@ export function SetupScreen() {
       setActiveBank(data.store?.active_bank ?? 'monobank');
       setFiscalConfigs(data.fiscalConfigs);
       setError('');
+      void fetchKioskConfig();
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchKioskConfig]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -788,6 +906,7 @@ export function SetupScreen() {
   const handleTerminalChecked = (result: CheckResult) => {
     setTerminalChecked(result.online);
     setTerminalMerchants(result.merchants);
+    if (result.online) void fetchKioskConfig();
   };
 
   const handleAssigned = (_noVat: string, _vat: string | null) => {
@@ -872,6 +991,7 @@ export function SetupScreen() {
           terminalMerchants={terminalMerchants}
           fiscalConfigs={fiscalConfigs}
           terminalChecked={terminalChecked}
+          merchantVerifications={merchantVerifications}
           onAssigned={handleAssigned}
           onFiscalSaved={handleFiscalSaved}
         />
@@ -886,6 +1006,7 @@ export function SetupScreen() {
             terminalConfigs={setup?.terminalConfigs ?? []}
             fiscalConfigs={fiscalConfigs}
             terminalChecked={terminalChecked}
+            merchantVerifications={merchantVerifications}
           />
         </div>
       </div>

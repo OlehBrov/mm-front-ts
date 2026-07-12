@@ -34,6 +34,7 @@ import {
 } from '../helper/salesDiscountCounter';
 import { setTerminalState } from '../redux/features/terminalSlice';
 import { setMerchantsData } from '../redux/features/merchantsSlice';
+import { setMaintenanceMode } from '../redux/features/maintenanceSlice';
 import { updateFiscal } from '../redux/features/recieptSlice';
 import { clearBuyStatus } from '../redux/features/buyStatus';
 import { setShowAddProductsConfirm } from '../redux/features/showAddConfirmSlice';
@@ -82,6 +83,10 @@ socket.on('terminal-status', (data: { status: string }) => {
 
 socket.on('receipt-ready', (data: Record<string, unknown>) => {
   store.dispatch(updateFiscal(data));
+});
+
+socket.on('maintenance-mode', (data: { enabled: boolean }) => {
+  store.dispatch(setMaintenanceMode(data.enabled));
 });
 
 export const Root = () => {
