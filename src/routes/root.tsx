@@ -239,7 +239,10 @@ export const Root = () => {
   }, [merchantData.data]);
 
   const barCodeHandler = (code: string) => {
+    console.log(`[SCAN] barCodeHandler called with code=${JSON.stringify(code)} (length=${code.length})`);
+
     if (CONFIG_BARCODE && code === CONFIG_BARCODE) {
+      console.log('[SCAN] Matches CONFIG_BARCODE — opening /setup');
       if (isIdleOpen) handleIdleClose();
       barcode = '';
       navigate('/setup');
@@ -253,6 +256,7 @@ export const Root = () => {
     if (latestIsNotify) dispatch(setIsNotifyOpen(false));
     if (latestIsIdleOpen) dispatch(setIsIdleOpen(false));
 
+    console.log(`[SCAN] Calling setSearchBarcode(${JSON.stringify(code)})`);
     setSearchBarcode(code);
     document.getElementById('barcode-dummy')?.focus();
     setIdleEvent(IDLE_EVENTS);
@@ -260,7 +264,9 @@ export const Root = () => {
   };
 
   const handleKeyPress = (event: KeyboardEvent) => {
+    console.log(`[SCAN] keyEvent type=${event.type} key=${JSON.stringify(event.key)} bufferBeforeThisKey=${JSON.stringify(barcode)}`);
     if (event.key === 'Enter') {
+      console.log(`[SCAN] Enter pressed — dispatching barCodeHandler with buffer=${JSON.stringify(barcode)}`);
       barCodeHandler(barcode);
       return;
     }
@@ -276,6 +282,13 @@ export const Root = () => {
 
   useEffect(() => {
     if (singleProduct?.isFetching) return;
+    console.log(
+      `[SCAN] singleProduct query settled: searchBarcode=${JSON.stringify(searchBarcode)} isSuccess=${singleProduct?.isSuccess} isError=${!!singleProduct?.error} error=${JSON.stringify(singleProduct?.error)} product=${JSON.stringify(singleProduct?.currentData?.product && {
+        id: singleProduct.currentData.product.id,
+        name: singleProduct.currentData.product.product_name,
+        barcode: singleProduct.currentData.product.barcode,
+      })}`
+    );
     if (singleProduct?.error) {
       dispatch(setNoProdError(true));
       setSearchBarcode(null);
@@ -294,6 +307,7 @@ export const Root = () => {
         return;
       }
 
+      console.log(`[SCAN] Adding to cart: id=${product.id} name=${product.product_name} barcode=${product.barcode}`);
       dispatch(setShowAddProductsConfirm({ show: true, product, isSuccess: true, message: 'додано' }));
       addScannedProductToCart(product);
       setSearchBarcode(null);
