@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { store } from '../redux/store';
 import { useIdleTimer, EventsType } from 'react-idle-timer';
@@ -18,7 +18,7 @@ import {
   storeApi,
   useCancelBuyProductsMutation,
   useGetMerchantDataQuery,
-  useGetSingleProductQuery,
+  useLazyGetSingleProductQuery,
 } from '../api/storeApi';
 import { NoProduct } from '../components/NoProduct';
 import { TerminalStatusBadge } from '../components/TerminalStatusBadge';
@@ -98,7 +98,6 @@ socket.on('maintenance-mode', (data: { enabled: boolean }) => {
 export const Root = () => {
   const [pageHeading, setPageHeading] = useState('Каталог продуктів');
   const [idleEvent, setIdleEvent] = useState<EventsType[]>(IDLE_EVENTS);
-  const [searchBarcode, setSearchBarcode] = useState<string | null>(null);
   const [merchant, setMerchant] = useState<string | null>(null);
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
@@ -117,12 +116,9 @@ export const Root = () => {
   const IDLE_TIMEOUT = 60000;
   const promptBeforeIdle = cartProducts.length > 0 ? 30000 : 0;
 
-  let barcode = '';
+  const barcodeRef = useRef('');
 
-  const singleProduct = useGetSingleProductQuery(
-    { barcode: searchBarcode },
-    { skip: !searchBarcode, refetchOnMountOrArgChange: true }
-  );
+  const [triggerGetSingleProduct] = useLazyGetSingleProductQuery();
 
   const [cancelFunction] = useCancelBuyProductsMutation();
   const merchantData = useGetMerchantDataQuery();
@@ -238,83 +234,80 @@ export const Root = () => {
     else if (isSingleMerchant && useVATbyDefault) setMerchant('VAT');
   }, [merchantData.data]);
 
-  const barCodeHandler = (code: string) => {
-    console.log(`[SCAN] barCodeHandler called with code=${JSON.stringify(code)} (length=${code.length})`);
+  const barCodeHandler = useCallback(
+    async (code: string) => {
+      console.log(`[SCAN] barCodeHandler called with code=${JSON.stringify(code)} (length=${code.length})`);
 
-    if (CONFIG_BARCODE && code === CONFIG_BARCODE) {
-      console.log('[SCAN] Matches CONFIG_BARCODE — opening /setup');
-      if (isIdleOpen) handleIdleClose();
-      barcode = '';
-      navigate('/setup');
-      return;
-    }
+      if (CONFIG_BARCODE && code === CONFIG_BARCODE) {
+        console.log('[SCAN] Matches CONFIG_BARCODE — opening /setup');
+        if (store.getState().notify.isIdleOpen) handleIdleClose();
+        navigate('/setup');
+        return;
+      }
 
-    if (isIdleOpen) handleIdleClose();
+      if (store.getState().notify.isIdleOpen) handleIdleClose();
 
-    const latestIsIdleOpen = store.getState().notify.isIdleOpen;
-    const latestIsNotify = store.getState().notify.isNotifyOpen;
-    if (latestIsNotify) dispatch(setIsNotifyOpen(false));
-    if (latestIsIdleOpen) dispatch(setIsIdleOpen(false));
+      const latestIsIdleOpen = store.getState().notify.isIdleOpen;
+      const latestIsNotify = store.getState().notify.isNotifyOpen;
+      if (latestIsNotify) dispatch(setIsNotifyOpen(false));
+      if (latestIsIdleOpen) dispatch(setIsIdleOpen(false));
 
-    console.log(`[SCAN] Calling setSearchBarcode(${JSON.stringify(code)})`);
-    setSearchBarcode(code);
-    document.getElementById('barcode-dummy')?.focus();
-    setIdleEvent(IDLE_EVENTS);
-    barcode = '';
-  };
+      document.getElementById('barcode-dummy')?.focus();
+      setIdleEvent(IDLE_EVENTS);
 
-  const handleKeyPress = (event: KeyboardEvent) => {
-    console.log(`[SCAN] keyEvent type=${event.type} key=${JSON.stringify(event.key)} bufferBeforeThisKey=${JSON.stringify(barcode)}`);
-    if (event.key === 'Enter') {
-      console.log(`[SCAN] Enter pressed — dispatching barCodeHandler with buffer=${JSON.stringify(barcode)}`);
-      barCodeHandler(barcode);
-      return;
-    }
-    if (event.type === 'keypress' || event.type === 'keydown') {
-      barcode += event.key;
-    }
-  };
+      console.log(`[SCAN] Requesting product for barcode=${JSON.stringify(code)}`);
+      try {
+        const result = await triggerGetSingleProduct({ barcode: code }).unwrap();
+        const product = result.product;
+        console.log(
+          `[SCAN] Response for barcode=${JSON.stringify(code)}: id=${product?.id} name=${product?.product_name} barcode=${product?.barcode}`
+        );
+        if (!product) return;
+
+        const productCanBeAdded = checkIfScannedProductToAdd(product);
+        if (!productCanBeAdded) {
+          dispatch(setShowAddProductsConfirm({ show: true, product, isSuccess: false, message: 'закінчились' }));
+          setTimeout(() => dispatch(setShowAddProductsConfirm({ show: false, product: null, isSuccess: false, message: '' })), 1000);
+          return;
+        }
+
+        console.log(`[SCAN] Adding to cart: id=${product.id} name=${product.product_name} barcode=${product.barcode}`);
+        dispatch(setShowAddProductsConfirm({ show: true, product, isSuccess: true, message: 'додано' }));
+        addScannedProductToCart(product);
+        setTimeout(() => dispatch(setShowAddProductsConfirm({ show: false, product: null, isSuccess: false, message: '' })), 1000);
+      } catch (err) {
+        console.log(`[SCAN] No product found for barcode=${JSON.stringify(code)}`, err);
+        dispatch(setNoProdError(true));
+        setTimeout(() => dispatch(setNoProdError(false)), 2000);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cartProducts, merchant, dispatch, navigate, triggerGetSingleProduct]
+  );
+
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      console.log(
+        `[SCAN] keyEvent type=${event.type} key=${JSON.stringify(event.key)} bufferBeforeThisKey=${JSON.stringify(barcodeRef.current)}`
+      );
+      if (event.key === 'Enter') {
+        const code = barcodeRef.current;
+        barcodeRef.current = '';
+        console.log(`[SCAN] Enter pressed — dispatching barCodeHandler with buffer=${JSON.stringify(code)}`);
+        barCodeHandler(code);
+        return;
+      }
+      if (event.type === 'keypress' || event.type === 'keydown') {
+        barcodeRef.current += event.key;
+      }
+    },
+    [barCodeHandler]
+  );
 
   useEffect(() => {
     document.addEventListener('keypress', handleKeyPress);
     return () => document.removeEventListener('keypress', handleKeyPress);
-  }, []);
-
-  useEffect(() => {
-    if (singleProduct?.isFetching) return;
-    console.log(
-      `[SCAN] singleProduct query settled: searchBarcode=${JSON.stringify(searchBarcode)} isSuccess=${singleProduct?.isSuccess} isError=${!!singleProduct?.error} error=${JSON.stringify(singleProduct?.error)} product=${JSON.stringify(singleProduct?.currentData?.product && {
-        id: singleProduct.currentData.product.id,
-        name: singleProduct.currentData.product.product_name,
-        barcode: singleProduct.currentData.product.barcode,
-      })}`
-    );
-    if (singleProduct?.error) {
-      dispatch(setNoProdError(true));
-      setSearchBarcode(null);
-      setTimeout(() => dispatch(setNoProdError(false)), 2000);
-      return;
-    }
-    if (singleProduct?.isSuccess && singleProduct?.status === 'fulfilled') {
-      const product = singleProduct.currentData?.product;
-      if (!product) return;
-
-      const productCanBeAdded = checkIfScannedProductToAdd(product);
-      if (!productCanBeAdded) {
-        dispatch(setShowAddProductsConfirm({ show: true, product, isSuccess: false, message: 'закінчились' }));
-        setSearchBarcode(null);
-        setTimeout(() => dispatch(setShowAddProductsConfirm({ show: false, product: null, isSuccess: false, message: '' })), 1000);
-        return;
-      }
-
-      console.log(`[SCAN] Adding to cart: id=${product.id} name=${product.product_name} barcode=${product.barcode}`);
-      dispatch(setShowAddProductsConfirm({ show: true, product, isSuccess: true, message: 'додано' }));
-      addScannedProductToCart(product);
-      setSearchBarcode(null);
-      setTimeout(() => dispatch(setShowAddProductsConfirm({ show: false, product: null, isSuccess: false, message: '' })), 1000);
-    }
-    setSearchBarcode(null);
-  }, [singleProduct]);
+  }, [handleKeyPress]);
 
   const addScannedProductToCart = (scannedProduct: Product) => {
     let discount = 0;

@@ -147,6 +147,7 @@ export const {
   useCancelBuyProductsMutation,
   useGetProductByIdQuery,
   useGetSingleProductQuery,
+  useLazyGetSingleProductQuery,
   useGetStoreSaleProductsQuery,
   useGetMerchantDataQuery,
   useGetScreensaverActiveQuery,
