@@ -948,6 +948,7 @@ export function SetupScreen() {
 
   const monoConfig = setup?.terminalConfigs.find((t) => t.bank === 'monobank');
   const privatConfig = setup?.terminalConfigs.find((t) => t.bank === 'privatbank');
+  const ingenicoConfig = setup?.terminalConfigs.find((t) => t.bank === 'ingenico');
 
   return (
     <div className="setup-screen">
@@ -969,7 +970,7 @@ export function SetupScreen() {
       </div>
 
       <p className="setup-section-label">Термінали</p>
-      <div className="setup-row col-2">
+      <div className="setup-row col-3">
         <TerminalCard
           bank="monobank"
           label="MonoBank"
@@ -985,6 +986,15 @@ export function SetupScreen() {
           isActive={activeBank === 'privatbank'}
           config={privatConfig}
           onBankSelect={() => void handleBankSelect('privatbank')}
+          onSaved={load}
+          onChecked={handleTerminalChecked}
+        />
+        <TerminalCard
+          bank="ingenico"
+          label="PrivatBank (BPOS)"
+          isActive={activeBank === 'ingenico'}
+          config={ingenicoConfig}
+          onBankSelect={() => void handleBankSelect('ingenico')}
           onSaved={load}
           onChecked={handleTerminalChecked}
         />

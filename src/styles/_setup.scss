@@ -43,10 +43,11 @@
 
     &.col-1 { grid-template-columns: 1fr; }
     &.col-2 { grid-template-columns: 1fr 1fr; }
+    &.col-3 { grid-template-columns: 1fr 1fr 1fr; }
     &.col-fiscal { grid-template-columns: 1fr 1fr; }
 
     @media (max-width: 900px) {
-      &.col-2, &.col-fiscal { grid-template-columns: 1fr; }
+      &.col-2, &.col-3, &.col-fiscal { grid-template-columns: 1fr; }
     }
   }
 
