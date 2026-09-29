@@ -91,7 +91,7 @@ function SaleRow({ sale, onChanged }: { sale: SaleItem; onChanged: () => void })
     setSaving(true);
     setFb({ msg: '', err: false });
     try {
-      await apiFetch(`/sales/${sale.sale_custom_id}/status`, {
+      await apiFetch(`/setup/sales/${sale.sale_custom_id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ is_active: !sale.is_active }),
       });
@@ -119,11 +119,11 @@ function SaleRow({ sale, onChanged }: { sale: SaleItem; onChanged: () => void })
       if (isThreshold) {
         body.threshold_amount = form.threshold.trim() === '' ? null : Number(form.threshold);
       }
-      const result = await apiFetch<{ message: string }>('/sales/edit', {
+      await apiFetch<{ message: string }>('/setup/sales/edit', {
         method: 'POST',
         body: JSON.stringify(body),
       });
-      setFb({ msg: result.message?.includes('queued') ? 'Заплановано — набуде чинності, коли кіоск стане вільним' : 'Збережено', err: false });
+      setFb({ msg: 'Збережено', err: false });
       setEditing(false);
       onChanged();
     } catch (e) {
@@ -276,8 +276,7 @@ export function SalesSettingsScreen() {
       </div>
 
       <p className="setup-hint">
-        Зміна ставки знижки чи вимкнення/увімкнення акції набуває чинності одразу, якщо кіоск зараз вільний
-        (не обслуговує покупця), або щойно він стане вільним.
+        Зміна ставки знижки чи вимкнення/увімкнення акції з цього екрана набуває чинності одразу.
       </p>
 
       {loading && <p style={{ color: '#484f58' }}>Завантаження...</p>}
