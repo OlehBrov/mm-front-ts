@@ -48,23 +48,18 @@ export const ComboProduct = ({ parentProduct, productQtyAvailable, merchant, sta
 
   const { currentData: childProduct, isSuccess } = useGetProductByIdQuery({ comboId: parentProduct.combo_id });
 
-  const comboPriceCounter = (price: number | string, discount: number | string): ComboPrice => {
-    const intPrice = parseFloat(String(price));
-    const intDiscount = parseFloat(String(discount));
-    const priceDecrement = parseFloat((intPrice * intDiscount).toFixed(2));
-    const newPrice = parseFloat((intPrice - priceDecrement).toFixed(2));
-    return { priceAfterDiscount: newPrice, priceDecrement };
-  };
-
+  // Pair pricing is authoritative from the backend (PricingService.priceCombo) — this
+  // component only reads it, matching the parent's regular product_price flow.
   useEffect(() => {
-    if (isSuccess && childProduct && parentProduct.Sales) {
+    if (isSuccess && childProduct?.comboPricing) {
+      const { parent, child } = childProduct.comboPricing;
       const availableChildQty = Number(childProduct.childProduct.product_left);
       const maxAvailablePairs = Math.min(maxAvailableMainProduct, availableChildQty);
       setMaxPairsAvailable(maxAvailablePairs);
-      setComboDiscount(Number(parentProduct.Sales.sale_discount_1) * 100);
+      setComboDiscount(Math.round(parent.discountFraction * 100));
 
-      setParentPrice(comboPriceCounter(parentProduct.product_price, parentProduct.Sales.sale_discount_1));
-      setChildPrice(comboPriceCounter(childProduct.childProduct.product_price, parentProduct.Sales.sale_discount_1));
+      setParentPrice({ priceAfterDiscount: parent.priceAfterDiscount, priceDecrement: parent.priceDecrement });
+      setChildPrice({ priceAfterDiscount: child.priceAfterDiscount, priceDecrement: child.priceDecrement });
     }
   }, [parentProduct, childProduct, productQtyAvailable, isSuccess]);
 

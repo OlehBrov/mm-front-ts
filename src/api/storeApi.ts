@@ -98,13 +98,22 @@ export const storeApi = createApi({
       },
       providesTags: ['Products'],
     }),
-    getProductById: build.query<{ childProduct: import('../types').Product }, { comboId: number | null | undefined }>({
+    getProductById: build.query<
+      { childProduct: import('../types').Product; comboPricing: import('../types').ComboPricing | null },
+      { comboId: number | null | undefined }
+    >({
       query: ({ comboId }) => ({
         url: '/products/product',
         method: 'GET',
         params: { comboId },
       }),
       providesTags: ['Products'],
+    }),
+    priceCart: build.mutation<
+      import('../types').PricedCartLine[],
+      { lines: { barcode: string; quantity: number }[] }
+    >({
+      query: (body) => ({ url: '/cart/price', method: 'POST', body }),
     }),
     getStoreSaleProducts: build.query<import('../types').StoreSaleData, void>({
       query: () => ({ url: '/config/store-sale', method: 'GET' }),
@@ -151,4 +160,5 @@ export const {
   useGetStoreSaleProductsQuery,
   useGetMerchantDataQuery,
   useGetScreensaverActiveQuery,
+  usePriceCartMutation,
 } = storeApi;

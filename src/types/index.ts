@@ -70,6 +70,46 @@ export interface Product {
   Categories?: ProductCategory;
   ProductsDivisions?: ProductDivision;
   divisionData?: DivisionData[];
+  // Computed server-side (PricingService) — the frontend no longer calculates these itself.
+  priceAfterDiscount?: number | string | null;
+  priceDecrement?: number | string;
+  hasLowerPrice?: boolean;
+  discountValue?: number;
+  saleName?: string | null;
+  /** Marker style/label key: real sale_id for normal types, 11/12 for the
+   * category/subcategory fallback discount (which has no sale_id of its own). */
+  badgeType?: number;
+}
+
+/** Authoritative per-unit pricing for one pair in a "комбо" (sale_id=7), from
+ * GET /api/products/product — replaces the old client-side comboPriceCounter. */
+export interface ComboUnitPricing {
+  basePrice: number;
+  priceAfterDiscount: number;
+  priceDecrement: number;
+  discountFraction: number;
+  hasLowerPrice: boolean;
+  saleName: string | null;
+}
+
+export interface ComboPricing {
+  parent: ComboUnitPricing;
+  child: ComboUnitPricing;
+}
+
+/** One priced cart line from POST /api/cart/price — see PricingService on the backend. */
+export interface PricedCartLine {
+  barcode: string;
+  productId: number;
+  quantity: number;
+  basePrice: number;
+  discountFraction: number;
+  priceAfterDiscount: number;
+  priceDecrement: number;
+  lineTotal: number;
+  saleId: number;
+  saleName: string | null;
+  hasLowerPrice: boolean;
 }
 
 export interface CartProduct extends Product {

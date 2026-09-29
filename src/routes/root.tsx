@@ -27,11 +27,6 @@ import { NotifyWindow } from '../components/NotifyWindow';
 import { AddProductConfirm } from '../components/AddProductConfirm';
 import { SearchResultsPopup } from '../components/SearchResultsPopup';
 import { Footer } from '../components/Footer';
-import {
-  calculateDaysLeft,
-  calculateDiscount,
-  calculateNewPrice,
-} from '../helper/salesDiscountCounter';
 import { setTerminalState } from '../redux/features/terminalSlice';
 import { setMerchantsData } from '../redux/features/merchantsSlice';
 import { setMaintenanceMode } from '../redux/features/maintenanceSlice';
@@ -167,14 +162,15 @@ export const Root = () => {
       });
   }, []);
 
-  // When screen becomes active (idle closed or app mounted) — check terminal immediately,
-  // then keep polling every 30s. Stops polling while screensaver is showing.
+  // Poll terminal status every 30s continuously — including while the screensaver (idle)
+  // is showing. Terminals go to sleep after inactivity; if we stopped polling during idle,
+  // the cached status backend holds could go stale for the whole idle period, so exiting
+  // idle would flash "недоступний" from a cached reading nobody refreshed in the meantime.
   useEffect(() => {
-    if (isIdleOpen) return;
     socket.emit('check-status');
     const interval = setInterval(() => socket.emit('check-status'), 30_000);
     return () => clearInterval(interval);
-  }, [isIdleOpen]);
+  }, []);
 
   useEffect(() => {
     if (merchantData.isSuccess) {
@@ -309,27 +305,9 @@ export const Root = () => {
     return () => document.removeEventListener('keypress', handleKeyPress);
   }, [handleKeyPress]);
 
+  // Price/discount already computed server-side (GET /api/products/single, PricingService) —
+  // just carry those fields over onto the cart entry.
   const addScannedProductToCart = (scannedProduct: Product) => {
-    let discount = 0;
-    let priceDecrement: number | string = 0;
-    let newPrice: number | string | null = null;
-    let hasLowerPrice = false;
-    const regularPrice = parseFloat(String(scannedProduct.product_price)).toFixed(2);
-
-    if (scannedProduct.sale_id === 1 || scannedProduct.sale_id === 2) {
-      const daysLeft = calculateDaysLeft(scannedProduct);
-      if (daysLeft <= 3) discount = calculateDiscount(scannedProduct, daysLeft);
-    } else if ([3, 4, 6].includes(scannedProduct.sale_id ?? -1)) {
-      discount = calculateDiscount(scannedProduct);
-    }
-
-    if (discount > 0) {
-      const calculatedNewPrice = calculateNewPrice(scannedProduct, discount);
-      priceDecrement = (Number(regularPrice) - Number(calculatedNewPrice)).toFixed(2);
-      newPrice = calculatedNewPrice;
-      hasLowerPrice = true;
-    }
-
     const merchantData = store.getState().merchant;
 
     dispatch(
@@ -337,11 +315,11 @@ export const Root = () => {
         product: {
           ...scannedProduct,
           inCartQuantity: 1,
-          priceDecrement,
-          priceAfterDiscount: newPrice,
-          hasLowerPrice,
+          priceDecrement: scannedProduct.priceDecrement ?? 0,
+          priceAfterDiscount: scannedProduct.priceAfterDiscount ?? null,
+          hasLowerPrice: !!scannedProduct.hasLowerPrice,
           merchant,
-          discountValue: discount,
+          discountValue: scannedProduct.discountValue ?? 0,
         } as CartProduct,
         taxData: {
           useVATbyDefault: merchantData.useVATbyDefault,

@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
   decrementComboProductsCount,
   decrementProductsCount,
@@ -8,36 +6,36 @@ import {
   removeComboFromCart,
   removeFromCart,
 } from '../redux/features/cartSlice';
+import { useDispatch } from 'react-redux';
 import { MinusIcon } from './icons/MinusIcon';
 import { PlusIcon } from './icons/PlusIcon';
 import { BinIcon } from './icons/BinIcon';
-import { CartProduct } from '../types';
+import { CartProduct, PricedCartLine } from '../types';
 
 interface Props {
   product: CartProduct;
+  /** Live server-side quote for this line (POST /api/cart/price) — authoritative for
+   * quantity-dependent promos (дубль/комбо/поріг чека). Undefined until the first
+   * quote comes back; the price captured at add-to-cart time is shown meanwhile. */
+  livePrice?: PricedCartLine;
+  liveChildPrice?: PricedCartLine;
 }
 
-export const CartProductItem = ({ product }: Props) => {
-  const [hasLowerPrice] = useState(product.hasLowerPrice);
-  const [currentProductPrice, setCurrentProductPrice] = useState(Number(product.product_price));
-  const [comboProduct, setComboProduct] = useState<CartProduct | null>(null);
-  const [comboPrice, setComboPrice] = useState(0);
+export const CartProductItem = ({ product, livePrice, liveChildPrice }: Props) => {
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    setComboProduct(product?.productsChildProduct ?? null);
-    if (product.productsChildProduct) {
-      const sum = Number(product.priceAfterDiscount) + Number(product.productsChildProduct.priceAfterDiscount);
-      setComboPrice(parseFloat(sum.toFixed(2)));
-    }
-  }, []);
+  const comboProduct = product.productsChildProduct ?? null;
 
   const regularPrice = parseFloat(String(product.product_price));
-  const lowPrice = parseFloat(String(product.priceAfterDiscount)) || null;
+  const unitPrice = livePrice?.priceAfterDiscount ?? (parseFloat(String(product.priceAfterDiscount)) || regularPrice);
+  const hasLowerPrice = livePrice ? livePrice.hasLowerPrice : !!product.hasLowerPrice;
+  const lineTotal = livePrice?.lineTotal ?? unitPrice * product.inCartQuantity;
 
-  useEffect(() => {
-    if (hasLowerPrice && lowPrice) setCurrentProductPrice(lowPrice);
-  }, [hasLowerPrice, lowPrice]);
+  const childRegularPrice = comboProduct ? parseFloat(String(comboProduct.product_price)) : 0;
+  const childUnitPrice = comboProduct
+    ? (liveChildPrice?.priceAfterDiscount ?? (parseFloat(String(comboProduct.priceAfterDiscount)) || childRegularPrice))
+    : 0;
+  const childHasLowerPrice = liveChildPrice ? liveChildPrice.hasLowerPrice : !!comboProduct?.hasLowerPrice;
+  const pairTotal = comboProduct ? lineTotal + (liveChildPrice?.lineTotal ?? childUnitPrice * product.inCartQuantity) : 0;
 
   return (
     <div className="cart-list-item">
@@ -57,12 +55,12 @@ export const CartProductItem = ({ product }: Props) => {
                 <div className="product-name-wrap">
                   <p className="cart-product-text cart-product-bold-text">{product.product_name}</p>
                   <p className={`cart-product-text cart-product-light-text ${hasLowerPrice ? 'crossed' : ''}`}>{regularPrice} грн.</p>
-                  {hasLowerPrice && <p className="product-card-light-text">{product.priceAfterDiscount} грн.</p>}
+                  {hasLowerPrice && <p className="product-card-light-text">{unitPrice.toFixed(2)} грн.</p>}
                 </div>
                 <div className="product-name-wrap">
                   <p className="cart-product-text cart-product-bold-text">{comboProduct.product_name}</p>
-                  <p className={`cart-product-text cart-product-light-text ${hasLowerPrice ? 'crossed' : ''}`}>{comboProduct.product_price} грн.</p>
-                  {hasLowerPrice && <p className="product-card-light-text">{comboProduct.priceAfterDiscount} грн.</p>}
+                  <p className={`cart-product-text cart-product-light-text ${childHasLowerPrice ? 'crossed' : ''}`}>{childRegularPrice} грн.</p>
+                  {childHasLowerPrice && <p className="product-card-light-text">{childUnitPrice.toFixed(2)} грн.</p>}
                 </div>
               </div>
             </div>
@@ -79,7 +77,7 @@ export const CartProductItem = ({ product }: Props) => {
             </div>
           </div>
           <div className="cart-item-total">
-            <p className="cart-product-text cart-product-light-text">{(comboPrice * product.inCartQuantity).toFixed(2)} грн.</p>
+            <p className="cart-product-text cart-product-light-text">{pairTotal.toFixed(2)} грн.</p>
             <button type="button" onClick={() => dispatch(removeComboFromCart(product.id))} className="custom-product-button cart-item-delete-button">
               <BinIcon />
             </button>
@@ -94,7 +92,7 @@ export const CartProductItem = ({ product }: Props) => {
             <div className="cart-product-details">
               <p className="cart-product-text cart-product-bold-text">{product.product_name}</p>
               <p className={`cart-product-text cart-product-light-text ${hasLowerPrice ? 'crossed' : ''}`}>{regularPrice} грн.</p>
-              {hasLowerPrice && <p className="product-card-light-text">{lowPrice} грн.</p>}
+              {hasLowerPrice && <p className="product-card-light-text">{unitPrice.toFixed(2)} грн.</p>}
             </div>
           </div>
           <div className="cart-item-controls">
@@ -109,7 +107,7 @@ export const CartProductItem = ({ product }: Props) => {
             </div>
           </div>
           <div className="cart-item-total">
-            <p className="cart-product-text cart-product-light-text">{(currentProductPrice * product.inCartQuantity).toFixed(2)} грн.</p>
+            <p className="cart-product-text cart-product-light-text">{lineTotal.toFixed(2)} грн.</p>
             <button type="button" onClick={() => dispatch(removeFromCart(product.id))} className="custom-product-button cart-item-delete-button">
               <BinIcon />
             </button>

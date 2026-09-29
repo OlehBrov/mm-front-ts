@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectBuyStatus, selectCart, selectCartProducts, selectCartTotalSum } from '../redux/selectors/selectors';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCancelBuyProductsMutation } from '../api/storeApi';
+import { useCancelBuyProductsMutation, usePriceCartMutation } from '../api/storeApi';
+import { PricedCartLine } from '../types';
 import { RiseLoader } from 'react-spinners';
 import { CartProductItem } from './CartProductItem';
 import ScrollbarsLib from 'react-custom-scrollbars-2';
@@ -29,6 +30,31 @@ export const Cart = () => {
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Live re-quote — types 7 (комбо), 8 (дубль) and 10 (поріг чека) depend on the whole
+  // cart, not a single product, so the price/discount shown at add-to-cart time can go
+  // stale as quantities change. The actual charge at checkout is always recomputed
+  // server-side regardless (CartService.repriceAuthoritative) — this call only keeps
+  // the on-screen numbers honest before that point.
+  const [priceCart, { data: pricedLinesData }] = usePriceCartMutation();
+  const cartLinesKey = useMemo(
+    () => cartProducts.map((p) => `${p.barcode}:${p.inCartQuantity}`).join(','),
+    [cartProducts],
+  );
+  useEffect(() => {
+    if (!cartProducts.length) return;
+    const lines = cartProducts.map((p) => ({ barcode: p.barcode, quantity: p.inCartQuantity }));
+    priceCart({ lines }).catch(() => {
+      /* best-effort — CartProductItem falls back to the price captured at add-to-cart time */
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartLinesKey]);
+
+  const pricedLinesByBarcode = useMemo(() => {
+    const map = new Map<string, PricedCartLine>();
+    for (const line of pricedLinesData ?? []) map.set(line.barcode, line);
+    return map;
+  }, [pricedLinesData]);
 
   useEffect(() => {
     socket.once('secondPayment', () => setCurrentPaymentCount(2));
@@ -128,7 +154,16 @@ export const Cart = () => {
               <div className="cart-list">
                 {cartProducts.map((el) => {
                   if (el.isComboChild) return null;
-                  return <CartProductItem key={el.isComboParent ? 'parent' + el.id : el.id} product={el} />;
+                  return (
+                    <CartProductItem
+                      key={el.isComboParent ? 'parent' + el.id : el.id}
+                      product={el}
+                      livePrice={pricedLinesByBarcode.get(el.barcode)}
+                      liveChildPrice={
+                        el.productsChildProduct ? pricedLinesByBarcode.get(el.productsChildProduct.barcode) : undefined
+                      }
+                    />
+                  );
                 })}
               </div>
             </Scrollbars>

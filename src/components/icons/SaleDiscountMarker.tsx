@@ -1,29 +1,27 @@
-const SALETYPENAMES: Record<number, string> = {
-  1: 'знижка',
-  2: 'знижка',
-  3: 'новинка',
-  4: 'знижка',
-  5: '',
-  6: 'товар дня',
-  7: 'комбо',
-  8: 'дубль',
-  9: 'знижка',
-};
+// Style key → CSS background class (see _products.scss .marker-bg-N). 11/12 (category/
+// subcategory fallback discount, no sale_id of its own) reuse 9's "Акція дня" look.
+const STYLE_KEY: Record<number, number> = { 11: 9, 12: 9 };
+
+// Types where the badge is just an announcement, not a concrete number, matching the
+// original frontend: комбо (7) and дубль (8) only make sense priced in the cart/combo
+// screen; новинка (3) and товар дня (6) were deliberately shown without a % as well.
+const HIDE_PERCENT: ReadonlySet<number> = new Set([3, 6, 7, 8]);
 
 interface Props {
-  type: number;
-  value?: number;
+  saleName?: string | null;
+  discountValue?: number;
+  badgeType: number;
 }
 
-export const SaleDiscountMarker = ({ type, value }: Props) => {
-  if (!type || type === 0) return null;
-  const markerText = (SALETYPENAMES[type] ?? '').toUpperCase();
-  let discount: number | undefined;
-  if (type === 1 || type === 2 || (type === 4 && value) || (type === 9 && value)) {
-    discount = Number(value) * 100;
-  }
+export const SaleDiscountMarker = ({ saleName, discountValue, badgeType }: Props) => {
+  if (!badgeType) return null;
+  const styleKey = STYLE_KEY[badgeType] ?? badgeType;
+  const markerText = (saleName ?? '').toUpperCase();
+  const discount =
+    !HIDE_PERCENT.has(badgeType) && discountValue ? Math.round(discountValue * 100) : undefined;
+
   return (
-    <div className={`sale-marker marker-bg-${type}`}>
+    <div className={`sale-marker marker-bg-${styleKey}`}>
       {!discount && <p>{markerText}</p>}
       {discount && <p>{`${markerText} -${discount}%`}</p>}
     </div>

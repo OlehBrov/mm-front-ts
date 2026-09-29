@@ -24,6 +24,12 @@
     h1 { flex: 1; }
   }
 
+  .setup-hint {
+    font-size: 13px;
+    color: #8b949e;
+    margin: -8px 0 20px;
+  }
+
   .setup-section-label {
     font-size: 11px;
     font-weight: 700;
@@ -434,6 +440,28 @@
     align-items: center;
     gap: 14px;
     flex-shrink: 0;
+  }
+
+  .sale-row {
+    align-items: flex-start;
+  }
+
+  .sale-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    max-width: 280px;
+
+    .form-row {
+      margin: 0;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 2px;
+    }
   }
 
   // ── Toggle switch ─────────────────────────────────────────────────────────

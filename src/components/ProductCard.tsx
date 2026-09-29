@@ -6,12 +6,6 @@ import { SaleDiscountMarker } from './icons/SaleDiscountMarker';
 import { DetailsIcon } from './icons/DetailsIcon';
 import { ProductPlaceholderIcon } from './icons/ProductPlaceholderIcon';
 import { addDetailedProduct } from '../redux/features/detailedProductSlice';
-import {
-  shouldShowMarker,
-  calculateDiscount,
-  calculateNewPrice,
-  calculateDaysLeft,
-} from '../helper/salesDiscountCounter';
 import { selectCartProducts, selectCartTotalSum } from '../redux/selectors/selectors';
 import { setShowAddProductsConfirm } from '../redux/features/showAddConfirmSlice';
 import { CartProduct, Product } from '../types';
@@ -23,13 +17,10 @@ interface Props {
   onIdle?: boolean;
 }
 
+// Price, discount and badge eligibility all come from the backend (PricingService) —
+// this component only displays what GET /api/products already computed.
 export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant = false, onIdle = false }: Props) => {
   const [productQtyAvailable, setProductQtyAvailable] = useState(1);
-  const [showMarker, setShowMarker] = useState(false);
-  const [discountValue, setDiscountValue] = useState(0);
-  const [newPrice, setNewPrice] = useState<string | null>(null);
-  const [priceDecrement, setPriceDecrement] = useState<string | number>(0);
-  const [hasLowerPrice, setHasLowerPrice] = useState(false);
   const [productAvailable, setProductAvailable] = useState(true);
   const [merchant, setMerchant] = useState<string | null>(null);
   const cartTotal = useSelector(selectCartTotalSum);
@@ -39,6 +30,11 @@ export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant
   const location = useLocation();
 
   const regularPrice = parseFloat(String(product.product_price)).toFixed(2);
+  const hasLowerPrice = !!product.hasLowerPrice;
+  const newPrice = product.priceAfterDiscount != null ? parseFloat(String(product.priceAfterDiscount)).toFixed(2) : null;
+  // badgeType is already 0 when nothing should show (day-window not reached, combo
+  // pair out of stock, etc.) — see PricingService.priceProduct on the backend.
+  const showMarker = !!product.badgeType;
 
   useEffect(() => {
     const inCartProduct = prodsInCart.find((p) => p.id === product.id);
@@ -54,28 +50,6 @@ export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant
       setProductQtyAvailable(Number(product.product_left));
     }
   }, [prodsInCart, product, cartTotal]);
-
-  useEffect(() => {
-    const markerShouldShow = shouldShowMarker(product);
-    setShowMarker(markerShouldShow);
-    if (!markerShouldShow) return;
-
-    let discount = 0;
-    if (product.sale_id === 1 || product.sale_id === 2) {
-      const daysLeft = calculateDaysLeft(product);
-      if (daysLeft <= 3) discount = calculateDiscount(product, daysLeft);
-    } else if ([3, 4, 6, 9].includes(product.sale_id ?? -1)) {
-      discount = calculateDiscount(product);
-    }
-
-    setDiscountValue(discount);
-    if (discount > 0) {
-      const calculatedNewPrice = calculateNewPrice(product, discount);
-      setNewPrice(calculatedNewPrice);
-      setPriceDecrement((Number(regularPrice) - Number(calculatedNewPrice)).toFixed(2));
-      setHasLowerPrice(true);
-    }
-  }, [product]);
 
   useEffect(() => {
     if (!isSingleMerchant && !useVATbyDefault) setMerchant('both');
@@ -94,11 +68,11 @@ export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant
           product: {
             ...product,
             inCartQuantity: 1,
-            priceDecrement,
-            priceAfterDiscount: newPrice,
+            priceDecrement: product.priceDecrement ?? 0,
+            priceAfterDiscount: product.priceAfterDiscount ?? null,
             hasLowerPrice,
             merchant,
-            discountValue,
+            discountValue: product.discountValue ?? 0,
           } as CartProduct,
           taxData: { useVATbyDefault, isSingleMerchant },
         })
@@ -117,11 +91,11 @@ export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant
       addDetailedProduct({
         ...product,
         inCartQuantity: 1,
-        priceDecrement,
-        priceAfterDiscount: newPrice,
+        priceDecrement: product.priceDecrement ?? 0,
+        priceAfterDiscount: product.priceAfterDiscount ?? null,
         hasLowerPrice,
         merchant,
-        discountValue,
+        discountValue: product.discountValue ?? 0,
         taxData: { useVATbyDefault, isSingleMerchant },
       } as CartProduct)
     );
@@ -130,7 +104,13 @@ export const ProductCard = ({ product, useVATbyDefault = false, isSingleMerchant
 
   return (
     <Link to="#" className={`product-card ${productAvailable ? '' : 'no-product'}`} onClick={handleProductClick}>
-      {showMarker && <SaleDiscountMarker type={product.sale_id ?? 0} value={discountValue} />}
+      {showMarker && (
+        <SaleDiscountMarker
+          badgeType={product.badgeType ?? 0}
+          saleName={product.saleName}
+          discountValue={product.discountValue}
+        />
+      )}
       <div className="product-image-wrapper">
         {product.product_image
           ? <img className="product-image" src={product.product_image} alt="" />

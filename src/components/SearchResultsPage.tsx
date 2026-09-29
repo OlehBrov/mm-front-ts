@@ -24,7 +24,20 @@ export const SearchResultsPage = () => {
             <div className="product-card-footer">
               <h3>{el.product_name}</h3>
               <p>Price: {el.product_price}</p>
-              <button type="button" onClick={() => buyButtonHandler({ ...el, inCartQuantity: 1, priceDecrement: 0, priceAfterDiscount: null, hasLowerPrice: false, merchant: null, discountValue: 0 })}>
+              <button
+                type="button"
+                onClick={() =>
+                  buyButtonHandler({
+                    ...el,
+                    inCartQuantity: 1,
+                    priceDecrement: el.priceDecrement ?? 0,
+                    priceAfterDiscount: el.priceAfterDiscount ?? null,
+                    hasLowerPrice: !!el.hasLowerPrice,
+                    merchant: null,
+                    discountValue: el.discountValue ?? 0,
+                  })
+                }
+              >
                 Додати в корзину
               </button>
             </div>
